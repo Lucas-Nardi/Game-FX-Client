@@ -55,6 +55,7 @@ public class SpaceGameP1 extends Application {
     boolean novoAlien = false;
     boolean novaBala = false;
     private int score = 0;
+    private boolean pararServer = false;
 
     private Label palavraScore;
     private Label scoreImage;
@@ -124,18 +125,19 @@ public class SpaceGameP1 extends Application {
             @Override
             public void handle(long currentNanoTime) {
 
-                if (nave1.isDisable() && nave2.isDisable()) { // CONDICAO PARA PARAR O JOGO
+                if (nave1.isVisible() == false && nave2.isVisible() == false) { // CONDICAO PARA PARAR O JOGO
                     //Voltar para o menu 
 
                     jogador1.setPontuacao(score);
                     jogador2.setPontuacao(score);
                     loop.stop();
                     tela.close();
+                    pararServer = true;
                     //rodarSom.stop();
                     //irMenu(lista);
 
                 }
-                
+
                 if (novoAlien == true) {
 
                     cairAlien(root);
@@ -149,31 +151,29 @@ public class SpaceGameP1 extends Application {
 
                 gc.clearRect(0, 0, 840, 520);
 
-                if (balaObjeto.size() > 0) {
-
+                if (balaImage.size() > 0) {
                     colisao_Bala(root);
                 }
+                
+                if (nave1.isVisible() == true) {
 
-                if (alienObjeto.size() > 0) {
-
-                    if (nave1.isDisable() == false) {
-
-                        colisao_Boneco(nave1, 1, root);
+                    if (alienObjeto.size() > 0) {
+                        colisao_Boneco(nave1, 2, root);
                     }
-                    if (nave2.isDisable() == false) {
+                    nave1.setLayoutX(pox1);
+                }
+                if (nave2.isVisible() == true) {
 
+                    if (alienObjeto.size() > 0) {
                         colisao_Boneco(nave2, 2, root);
                     }
+                    nave2.setLayoutX(pox2);
                 }
-
-                nave2.setLayoutX(pox2);
-                nave1.setLayoutX(pox1);
-                nave1.setLayoutY(poy1);
 
                 theScene.setOnKeyPressed(new EventHandler<KeyEvent>() {
                     public void handle(KeyEvent ke) {
 
-                        if (nave1.isDisable() == false) {
+                        if (nave1.isVisible() == true) {
 
                             if (ke.getCode() == KeyCode.RIGHT) {
 
@@ -354,6 +354,13 @@ public class SpaceGameP1 extends Application {
                 while (true) {
 
                     try {
+                        if (pararServer == true) {
+
+                            outObject.close();
+                            inObject.close();
+                            client.close();
+                            break;
+                        }
                         System.out.println("ESPERANDO DADOS DO JOGADOR 2");
                         data = (DadosDoJogo) inObject.readObject();
                         pox2 = data.getPosicaoX();
@@ -387,7 +394,6 @@ public class SpaceGameP1 extends Application {
     private void cairAlien(Group root) {
 
         Alien ali;
-        System.out.println("COLOCANDO NOVO ALIEN");
         int tam = alienObjeto.size() - 1;
         ali = alienObjeto.get(tam);
         Rectangle rec = new Rectangle();
@@ -427,23 +433,28 @@ public class SpaceGameP1 extends Application {
 
                 if (player == 1) { // Alien Colidiu com player 1
 
-                    System.out.println("Alien Colidiu com a nave1");
-
-                    qtdVida1 = vida1.getProgress();
-                    qtdVida1 = qtdVida1 - 0.1;
-                    vida1.setProgress(qtdVida1);
                     alien.setVida();
 
-                    if (qtdVida1 == 0.0) { // Fazer a animação da vida ir de um lado para o outro
+                    if (vida1.getProgress() > 0) { // Fazer a animação da vida ir de um lado para o outro
 
                         qtdVida1 = vida1.getProgress();
                         qtdVida1 = qtdVida1 - 0.1;
+                        
+                        
+                        if(qtdVida1  <= 0){
+                            
+                            nave1.setVisible(false);
+                            qtdVida1 = qtdVida1 - 2;
+                        }
+                        
                         vida1.setProgress(qtdVida1);
-                        nave1.setDisable(true);
-                        nave1.setVisible(false);
-                    }
 
+                    } 
+                    
                     if (alien.getVida() == 0) {
+
+                        score = score + alien.getPontuacao();
+                        scoreImage.setText(Integer.toString(score));
 
                         for (int j = 0; j < root.getChildren().size(); j++) {
 
@@ -467,19 +478,20 @@ public class SpaceGameP1 extends Application {
 
                 } else {  // Alien Colideiu com player 2
 
-                    System.out.println("Alien Colidiu com a nave2");
-                    qtdVida2 = vida2.getProgress();
-                    qtdVida2 = qtdVida2 - 0.1;
-                    vida2.setProgress(qtdVida2);
                     alien.setVida();
 
-                    if (qtdVida2 == 0.0) { // Fazer a animação da vida ir de um lado para o outro
+                    if (vida2.getProgress() > 0) { // Fazer a animação da vida ir de um lado para o outro
 
                         qtdVida2 = vida2.getProgress();
                         qtdVida2 = qtdVida2 - 0.1;
+                        
+                        
+                        if(qtdVida2  <= 0){
+                            
+                            nave2.setVisible(false);
+                            qtdVida1 = qtdVida2 - 2;
+                        }
                         vida2.setProgress(qtdVida2);
-                        nave2.setDisable(true);
-                        nave2.setVisible(false);
                     }
 
                     if (alien.getVida() == 0) {
@@ -509,36 +521,41 @@ public class SpaceGameP1 extends Application {
 
                 if (static_bloc.getLayoutY() > 705) {  // ALIEN PASSOU PELAS NAVES 
 
-                    qtdVida1 = vida1.getProgress();  // Tira a vida dos 2 jogadores ja que as naves passaram por eles
-                    qtdVida1 = qtdVida1 - 0.1;
-                    vida1.setProgress(qtdVida1);
-
+                    qtdVida1 = vida1.getProgress();
                     qtdVida2 = vida2.getProgress();
-                    qtdVida2 = qtdVida2 - 0.1;
-                    vida2.setProgress(qtdVida2);
-
-                    if (qtdVida1 == 0.0) { // Fazer a animação da vida ir de um lado para o outro
+                    
+                    if (vida1.getProgress() > 0) { // Fazer a animação da vida ir de um lado para o outro
 
                         qtdVida1 = vida1.getProgress();
                         qtdVida1 = qtdVida1 - 0.1;
+                        
+                        
+                        if(qtdVida1  <= 0){
+                            
+                            nave1.setVisible(false);
+                            qtdVida1 = qtdVida1 - 2;
+                        }
                         vida1.setProgress(qtdVida1);
-                        nave1.setDisable(true);
-                        nave1.setVisible(false);
                     }
-                    if (qtdVida2 == 0.0) { // Fazer a animação da vida ir de um lado para o outro
+                    
+                    if (vida2.getProgress() > 0) { // Fazer a animação da vida ir de um lado para o outro
 
                         qtdVida2 = vida2.getProgress();
                         qtdVida2 = qtdVida2 - 0.1;
+                        
+                        
+                        if(qtdVida2  <= 0){
+                            
+                            nave2.setVisible(false);
+                            qtdVida1 = qtdVida2 - 2;
+                        }
                         vida2.setProgress(qtdVida2);
-                        nave2.setDisable(true);
-                        nave2.setVisible(false);
                     }
 
                     for (int j = 0; j < root.getChildren().size(); j++) {  // REMOVE A NAVE DO JOGO
 
                         if (static_bloc == root.getChildren().get(j)) {
 
-                            System.out.println("Alien Fora da Tela");
                             alienImage.remove(i);
                             alienObjeto.remove(i);
                             root.getChildren().remove(j);
@@ -558,7 +575,6 @@ public class SpaceGameP1 extends Application {
 
                         if (static_bloc == root.getChildren().get(j)) {
 
-                            System.out.println("Alien Foi explodido");
                             alienImage.remove(i);
                             alienObjeto.remove(i);
                             root.getChildren().remove(j);
@@ -630,7 +646,6 @@ public class SpaceGameP1 extends Application {
                     }
                     if (collisionDetected) {
 
-                        System.out.println("Alien Colidiu com bala");
                         alienObjeto.get(j).setVida();
 
                         if (alien.getVida() == 0) {
@@ -655,8 +670,6 @@ public class SpaceGameP1 extends Application {
 
                         if (bulletImage.getLayoutY() < 100) { // RANGE MAXIMO DA BALA
 
-                            System.out.println("SAIU FORA DA TELA");
-
                             for (int k = 0; k < root.getChildren().size(); k++) {
 
                                 if (bulletImage == root.getChildren().get(k)) {
@@ -680,8 +693,6 @@ public class SpaceGameP1 extends Application {
             } else {
 
                 if (bulletImage.getLayoutY() < 100) { // RANGE MAXIMO DA BALA
-
-                    System.out.println("SAIU FORA DA TELA");
 
                     for (int k = 0; k < root.getChildren().size(); k++) {
 
@@ -708,7 +719,6 @@ public class SpaceGameP1 extends Application {
     private void adicionarBala(Group root) {
 
         Bala bala;
-        System.out.println("COLOCANDO NOVO ALIEN");
         int tam = balaObjeto.size() - 1;
         bala = balaObjeto.get(tam);
         Rectangle rec = new Rectangle();
@@ -758,7 +768,7 @@ public class SpaceGameP1 extends Application {
         } while (i == 2 || i == 1);
 //        jogador2 = lista.remover(nome1);
         //if (jogador2 == null) { // JOGADOR NÂO EXISTE
-        System.out.println("CRIEI JOGADOR 2");
+
         jogador1 = new Jogador(nome1);
         //    novoJogador = true;
         //}
