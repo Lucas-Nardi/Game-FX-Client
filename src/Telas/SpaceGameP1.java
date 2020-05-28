@@ -34,6 +34,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaPlayer.Status;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.paint.Paint;
@@ -41,6 +42,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javax.swing.JOptionPane;
 
 /**
@@ -87,9 +89,15 @@ public class SpaceGameP1 extends Application {
     private Jogador jogador2;
 
     //private LinkedList<Jogador> lista;
-//    private Jogador player;
-    private Media som;
-    private MediaPlayer rodarSom;
+
+    private Media backgroundSound;
+    private Media fire;
+    private Media explosion;
+    private Media revive;
+    private MediaPlayer mainSound;
+    private MediaPlayer fire1Sound;
+    private MediaPlayer fire2Sound;
+    private MediaPlayer explosionSound;
 
     private Socket client = null;
     ObjectInputStream inObject;
@@ -101,7 +109,7 @@ public class SpaceGameP1 extends Application {
 //    }
     @Override
     public void start(Stage stage) throws IOException, ClassNotFoundException {
-//        criarSom();
+
         tela = stage;
         tela.setTitle("Cliente ( <- / ->");
         tela.setResizable(false);
@@ -110,16 +118,13 @@ public class SpaceGameP1 extends Application {
         tela.setScene(theScene);
         Canvas canvas = new Canvas(840, 700);
 
-//        if (fase == 0) {
-//            criarJogador();
-//        }
         GraphicsContext gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
 
         criarJogador();
         cliente();
         paint(root, theScene);
-
+        criarSom();
         loop = new AnimationTimer() {
 
             @Override
@@ -154,7 +159,7 @@ public class SpaceGameP1 extends Application {
                 if (balaImage.size() > 0) {
                     colisao_Bala(root);
                 }
-                
+
                 if (nave1.isVisible() == true) {
 
                     if (alienObjeto.size() > 0) {
@@ -232,13 +237,31 @@ public class SpaceGameP1 extends Application {
                     }
                 });
 
-//                if(rodarSom.getStatus() == MediaPlayer.Status.PLAYING){
-//                    double ct = rodarSom.getCurrentTime().toSeconds();
-//                    if(ct > 60){
-//                        rodarSom.stop();
-//                        rodarSom.play();
-//                    }
-//                }
+                if (mainSound.getStatus() == Status.PLAYING) {   // TEMPO DE DURAÇÃO DE CADA SOM
+                    double ct = mainSound.getCurrentTime().toSeconds();
+                    if (ct > 313) { // RESETAR A MUSICA --- 4 min  e 37 segundos Min // 277 Segundos
+                        mainSound.stop();
+                        mainSound.play();
+                    }
+                }
+                if(explosionSound.getStatus() == Status.PLAYING){
+                    double ct = explosionSound.getCurrentTime().toSeconds();
+                    if (ct >= 1.5) {
+                        mainSound.stop();                        
+                    }
+                }
+                if(fire2Sound.getStatus() == Status.PLAYING){
+                    double ct = fire2Sound.getCurrentTime().toMillis();
+                    if (ct >= 800) { 
+                        fire2Sound.stop();                        
+                    }
+                }
+                if(fire1Sound.getStatus() == Status.PLAYING){
+                    double ct = fire1Sound.getCurrentTime().toSeconds();
+                    if (ct >= 1.5) { 
+                        fire1Sound.stop();                        
+                    }
+                }
                 tempoCriarBala++;
             }
         };
@@ -250,6 +273,23 @@ public class SpaceGameP1 extends Application {
 //        Menu novo = new Menu(l);
 //        novo.start(new Stage());
 //    }
+    public void criarSom() {
+
+        backgroundSound = new Media(this.getClass().getResource("/Som/game03.mp4").toExternalForm());
+        mainSound = new MediaPlayer(backgroundSound);
+        mainSound.setStartTime(Duration.seconds(220));
+        mainSound.setVolume(0.15);
+        mainSound.play();
+        explosion = new Media(this.getClass().getResource("/Som/exposion.mp3").toExternalForm());
+        explosionSound = new MediaPlayer(explosion);
+
+        fire = new Media(this.getClass().getResource("/Som/bala1.mp3").toExternalForm());
+        fire1Sound = new MediaPlayer(fire);
+
+        fire2Sound = new MediaPlayer(new Media(this.getClass().getResource("/Som/bala3.mp3").toExternalForm()));
+        fire2Sound.setVolume(0.2);
+    }
+
     private void paint(Group root, Scene theScene) {
 
         this.background.setFitHeight(720);
@@ -331,6 +371,7 @@ public class SpaceGameP1 extends Application {
     private void cliente() throws IOException, ClassNotFoundException {
         int port = 16868;
         Jogador jogador2;
+        //InetAddress server = InetAddress.getByName("192.168.0.25");
         InetAddress server = InetAddress.getLocalHost();
         client = new Socket(server, port);
         outObject = new ObjectOutputStream(client.getOutputStream());
@@ -439,18 +480,17 @@ public class SpaceGameP1 extends Application {
 
                         qtdVida1 = vida1.getProgress();
                         qtdVida1 = qtdVida1 - 0.1;
-                        
-                        
-                        if(qtdVida1  <= 0){
-                            
+
+                        if (qtdVida1 <= 0) {
+
                             nave1.setVisible(false);
                             qtdVida1 = qtdVida1 - 2;
                         }
-                        
+
                         vida1.setProgress(qtdVida1);
 
-                    } 
-                    
+                    }
+
                     if (alien.getVida() == 0) {
 
                         score = score + alien.getPontuacao();
@@ -484,10 +524,9 @@ public class SpaceGameP1 extends Application {
 
                         qtdVida2 = vida2.getProgress();
                         qtdVida2 = qtdVida2 - 0.1;
-                        
-                        
-                        if(qtdVida2  <= 0){
-                            
+
+                        if (qtdVida2 <= 0) {
+
                             nave2.setVisible(false);
                             qtdVida1 = qtdVida2 - 2;
                         }
@@ -523,29 +562,27 @@ public class SpaceGameP1 extends Application {
 
                     qtdVida1 = vida1.getProgress();
                     qtdVida2 = vida2.getProgress();
-                    
+
                     if (vida1.getProgress() > 0) { // Fazer a animação da vida ir de um lado para o outro
 
                         qtdVida1 = vida1.getProgress();
                         qtdVida1 = qtdVida1 - 0.1;
-                        
-                        
-                        if(qtdVida1  <= 0){
-                            
+
+                        if (qtdVida1 <= 0) {
+
                             nave1.setVisible(false);
                             qtdVida1 = qtdVida1 - 2;
                         }
                         vida1.setProgress(qtdVida1);
                     }
-                    
+
                     if (vida2.getProgress() > 0) { // Fazer a animação da vida ir de um lado para o outro
 
                         qtdVida2 = vida2.getProgress();
                         qtdVida2 = qtdVida2 - 0.1;
-                        
-                        
-                        if(qtdVida2  <= 0){
-                            
+
+                        if (qtdVida2 <= 0) {
+
                             nave2.setVisible(false);
                             qtdVida1 = qtdVida2 - 2;
                         }
@@ -607,7 +644,8 @@ public class SpaceGameP1 extends Application {
         balaImage.add(rec);
         Bala bullet = new Bala(pox1 + 10, poy1 - 50);
         balaObjeto.add(bullet);
-
+        fire1Sound.stop();
+        fire1Sound.play();
         try {
             outObject.writeObject(new DadosDoJogo(pox1, false, true, bullet));
             outObject.flush();
@@ -624,7 +662,7 @@ public class SpaceGameP1 extends Application {
         Shape bulletImage;
         Alien alien;
 
-        for (int i = 0; i < balaObjeto.size(); i++) {
+        for (int i = 0; i < balaImage.size(); i++) {
 
             bullet = balaObjeto.get(i);
             bulletImage = balaImage.get(i);
@@ -653,6 +691,8 @@ public class SpaceGameP1 extends Application {
                             aliImage.setFill(new ImagePattern(new Image("/Imagem/explosao.png")));
                             score = score + alien.getPontuacao();
                             scoreImage.setText(Integer.toString(score));
+                            explosionSound.stop();
+                            explosionSound.play();
                         }
                         for (int k = 0; k < root.getChildren().size(); k++) {
 
@@ -731,6 +771,8 @@ public class SpaceGameP1 extends Application {
         rec.setLayoutY(bala.getPosY());
         root.getChildren().add(rec);
         balaImage.add(rec);
+        fire2Sound.stop();
+        fire2Sound.play();
     }
 
     private void criarJogador() {
@@ -773,12 +815,6 @@ public class SpaceGameP1 extends Application {
         //    novoJogador = true;
         //}
         //novoJogador = false;
-    }
-
-    private void criarSom() {
-        som = new Media(this.getClass().getResource("/musica/Celestial.mp3").toExternalForm());
-        rodarSom = new MediaPlayer(som);
-        rodarSom.play();
     }
 
     private static void main(String[] args) {
