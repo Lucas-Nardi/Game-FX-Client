@@ -4,6 +4,7 @@ import Objetos.Alien;
 import Objetos.Bala;
 import Objetos.DadosDoJogo;
 import Objetos.Jogador;
+import Objetos.ListaJogador;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -102,11 +103,15 @@ public class SpaceGameP1 extends Application {
     private Socket client = null;
     ObjectInputStream inObject;
     ObjectOutputStream outObject;
-
-//    public SpaceGameP1(Jogador j, LinkedList<Jogador> l) {
-//        player = j;
-//        lista = l;
-//    }
+    
+    private ListaJogador lista;
+    
+    public SpaceGameP1(ListaJogador lista){
+        
+        this.lista = lista;
+    }
+    
+    
     @Override
     public void start(Stage stage) throws IOException, ClassNotFoundException {
 
@@ -130,16 +135,27 @@ public class SpaceGameP1 extends Application {
             @Override
             public void handle(long currentNanoTime) {
 
-                if (nave1.isVisible() == false && nave2.isVisible() == false) { // CONDICAO PARA PARAR O JOGO
+                if (nave1.isVisible() == false && nave2.isVisible() == false) {
                     //Voltar para o menu 
-
-                    jogador1.setPontuacao(score);
-                    jogador2.setPontuacao(score);
+                    
+                    System.out.println(score);
+                    if(jogador1.getPontuacao() <= score){                        
+                        jogador1.setPontuacao(score);
+                    }
+                    if(jogador2.getPontuacao() <= score){
+                        jogador2.setPontuacao(score);
+                    }
+                    
+                    jogador1.setPartidaJogadas();
+                    jogador2.setPartidaJogadas();
+                    lista.adicionar(jogador1);
+                    lista.adicionar(jogador2);
+                    pararServer = true;
+                    
                     loop.stop();
                     tela.close();
-                    pararServer = true;
-                    //rodarSom.stop();
-                    //irMenu(lista);
+                    mainSound.stop();
+                    irMenu(lista);
 
                 }
 
@@ -269,10 +285,10 @@ public class SpaceGameP1 extends Application {
         stage.show();
     }
 
-//    public void irMenu(LinkedList<Jogador> l) {
-//        Menu novo = new Menu(l);
-//        novo.start(new Stage());
-//    }
+    public void irMenu(ListaJogador  l) {
+        Menu novo = new Menu(l);
+        novo.start(new Stage());
+    }
     public void criarSom() {
 
         backgroundSound = new Media(this.getClass().getResource("/Som/game03.mp4").toExternalForm());
@@ -370,9 +386,8 @@ public class SpaceGameP1 extends Application {
 
     private void cliente() throws IOException, ClassNotFoundException {
         int port = 16868;
-        Jogador jogador2;
-        //InetAddress server = InetAddress.getByName("192.168.0.25");
-        InetAddress server = InetAddress.getLocalHost();
+        Jogador jogador2, player2;
+        InetAddress server = InetAddress.getByName("179.152.253.167"); 
         client = new Socket(server, port);
         outObject = new ObjectOutputStream(client.getOutputStream());
         inObject = new ObjectInputStream(client.getInputStream());
@@ -380,8 +395,18 @@ public class SpaceGameP1 extends Application {
 
         outObject.writeObject(jogador1);
         outObject.flush();
+        
         jogador2 = (Jogador) inObject.readObject();
-        this.jogador2 = jogador2;
+       
+        player2 = lista.remover(jogador1.getNome());
+        
+        if (player2 == null) { // JOGADOR NÂO EXISTE
+            
+            this.jogador2 = new Jogador(jogador2.getNome());    
+        
+        }else{
+            this.jogador2 = new Jogador(player2.getNome());
+        }
 
         new Thread() {
 
@@ -400,7 +425,7 @@ public class SpaceGameP1 extends Application {
                             outObject.close();
                             inObject.close();
                             client.close();
-                            break;
+                            return;
                         }
                         System.out.println("ESPERANDO DADOS DO JOGADOR 2");
                         data = (DadosDoJogo) inObject.readObject();
