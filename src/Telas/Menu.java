@@ -27,6 +27,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaPlayer.Status;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -205,6 +206,7 @@ public class Menu extends Application {
         tituilo.setText("Alien Attack");
         tituilo.setAlignment(Pos.CENTER);
         tituilo.setFont(Font.font("Berlin Sans FB", 60));
+        tituilo.setTextFill(Color.WHITE);        
         root.getChildren().add(tituilo);
     }
     
@@ -239,9 +241,21 @@ public class Menu extends Application {
         exit.setLayoutY(465);
         // ------------------------------------ NOME / IMAGEM
         start.setText("START");
+        start.setTextFill(Color.DARKBLUE);
         tutorial.setText("TUTORIAL");
+        tutorial.setTextFill(Color.DARKBLUE);
         scoreBoard.setText("SCORE BOARD");
+        scoreBoard.setTextFill(Color.DARKBLUE);
         exit.setText("EXIT");
+        exit.setTextFill(Color.DARKBLUE);
+        
+        // -------------------------------------
+        start.setStyle("-fx-base: rgb(211,211,211);");
+        tutorial.setStyle("-fx-base: rgb(211,211,211);");
+        scoreBoard.setStyle("-fx-base: rgb(211,211,211);");
+        exit.setStyle("-fx-base: rgb(211,211,211);");
+        
+        // ------------------------------------- BackgroundColor
 
         root.getChildren().addAll(start, tutorial, scoreBoard, exit);
     }

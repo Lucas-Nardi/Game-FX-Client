@@ -13,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -73,7 +74,7 @@ public class Inicial extends Application {
             }
         };
         loop.start();
-        stage.setTitle("Hello World!");
+        stage.setTitle("Patrocinadores");
         stage.setScene(scene);
         stage.show();
     }
@@ -87,12 +88,16 @@ public class Inicial extends Application {
         // NOME  E FONTE
         nome1.setText("Universidade");
         nome1.setFont(Font.font("System", 40));
+        nome1.setTextFill(Color.BLACK);
         nome2.setText("Católica");
         nome2.setFont(Font.font("System", 40));
+        nome2.setTextFill(Color.BLACK);
         nome3.setText("de");
         nome3.setFont(Font.font("System", 40));
+        nome3.setTextFill(Color.BLACK);
         nome4.setText("Pernambuco");
         nome4.setFont(Font.font("System", 40));
+        nome4.setTextFill(Color.BLACK);
         // TAMANHO DO LABEL
         nome1.setPrefSize(232, 61);
         nome2.setPrefSize(158, 61);

@@ -25,15 +25,10 @@ public class Tutorial extends Application {
     private ImageView voltar;
     private ImageView sair;
     private AnimationTimer loop;
-    private int duracao;
     private int anima;
-    private boolean animar = false;
-    private boolean voltando = false;
-    private int cont;
     private ListaJogador lista;
     private Media pageTurn;
     private Media btSair;
-    private MediaPlayer sound;
     private MediaPlayer buttomS;
 
     public Tutorial(ListaJogador list) {
@@ -48,71 +43,52 @@ public class Tutorial extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
         criarBotoes(root);
-        Image animacao[] = new Image[70];
-        duracao = 0;
+        Image animacao[] = new Image[4];
         anima = 0;
-        cont = 0;
+
         stage.initStyle(StageStyle.UNDECORATED);
-        pageTurn = new Media(this.getClass().getResource("/Som/PageTurn.mp3").toExternalForm());
-        sound = new MediaPlayer(pageTurn);
+
         btSair = new Media(this.getClass().getResource("/Som/Start.mp3").toExternalForm());
         buttomS = new MediaPlayer(btSair);
 
         for (int i = 0; i < animacao.length; i++) { // COLOCA TODAS AS ANIMAÇÕES NO VETOR
 
-            animacao[i] = new Image("/Imagem/ImagemTutorial/ani" + i + ".png");
+            animacao[i] = new Image("/Imagem/tutorial/ani" + i + ".png");
 
         }
         loop = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 gc.clearRect(0, 0, 775, 670);
-                gc.drawImage(animacao[anima], 0, 0);
-                if (animar == true) {
-                    cont = cont + 1;
-                }
-                if (cont % 15 == 0 && animar == true) { // MUDA A ANIMAÇÃO ACADA 15 FRAMES
-                    anima = anima + 1;
-                }
-                if (voltando == true && cont == 45) { // VOLTANDO AS PAGINAS
-                    animar = false;
-                    voltando = false;
-                    cont = 0;
-                    proximo.setVisible(true);
-                    voltar.setVisible(true);
-                    sair.setVisible(true);
-                }
-                if (cont == 60) { // ANIMOU UMA PAGINA
-                    cont = 0;
-                    proximo.setVisible(true);
-                    voltar.setVisible(true);
-                    sair.setVisible(true);
-                    animar = false;                    
-                }
+                
+                
+                gc.drawImage(animacao[anima], 0, 0,775,670);
+               
+                             
 
                 scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
                     @Override
                     public void handle(KeyEvent ke) {
-                        if (ke.getCode() == KeyCode.RIGHT && animar == false) {
-                            sound.stop();
+                        if (ke.getCode() == KeyCode.RIGHT) {
+                            
                             avancarImagem(animacao);
                         }
-                        if (ke.getCode() == KeyCode.LEFT && animar == false) {
-                            sound.stop();
+                        if (ke.getCode() == KeyCode.LEFT ) {
+                            
                             voltarImagem(animacao);
                         }
-                        if (ke.getCode() == KeyCode.ESCAPE && animar == false) {
+                        if (ke.getCode() == KeyCode.ESCAPE ) {
                             buttomS.play();
                         }
                     }
                 });
                 proximo.setOnMouseClicked((MouseEvent e) -> {                                   
-                    sound.stop();
+                    
                     avancarImagem(animacao);
                 });
 
                 voltar.setOnMouseClicked((MouseEvent e) -> {                    
-                    sound.stop();
+                    
                     voltarImagem(animacao);
                 });
 
@@ -139,9 +115,9 @@ public class Tutorial extends Application {
 
     private void criarBotoes(Group can) {
 
-        proximo = new ImageView("/Imagem/ImagemTutorial/setaProximo.png");
-        voltar = new ImageView("/Imagem/ImagemTutorial/setaAnterior1.png");
-        sair = new ImageView("/Imagem/ImagemTutorial/setaSair.png");
+        proximo = new ImageView("/Imagem/tutorial/setaProximo.png");
+        voltar = new ImageView("/Imagem/tutorial/setaAnterior1.png");
+        sair = new ImageView("/Imagem/tutorial/setaSair.png");
 
         // POSIÇÂO DOS BOTÕES
         proximo.setLayoutX(650);
@@ -154,46 +130,36 @@ public class Tutorial extends Application {
     }
 
     private void avancarImagem(Image animacao[]) {
-        if (anima == 68) { // PENULTIMA  PAGINA
-            sound.play();
-            anima = 69;
-            animar = false;
-            proximo.setImage(new Image("/Imagem/ImagemTutorial/setaProximo1.png"));
-        } else if (anima != animacao.length - 1) { // NÃO É A ULTIMA PÁGINA
-            sound.play();
-            animar = true;
-            proximo.setVisible(false);
-            voltar.setVisible(false);
-            sair.setVisible(false);
-            voltar.setImage(new Image("/Imagem/ImagemTutorial/setaAnterior.png"));
+        
+        if (anima == animacao.length - 1) { // PENULTIMA  PAGINA
+            anima = animacao.length - 1;            
+            proximo.setImage(new Image("/Imagem/tutorial/setaProximo1.png"));
+
+        } else if (anima < animacao.length - 1) { // NÃO É A ULTIMA PÁGINA           
+            anima = anima + 1;
+            if(anima == animacao.length - 1){
+                proximo.setImage(new Image("/Imagem/tutorial/setaProximo1.png"));
+            }
+            voltar.setImage(new Image("/Imagem/tutorial/setaAnterior.png"));
         }
     }
 
     private void voltarImagem(Image animacao[]) {
-        if (anima == 4) {
-            anima = 0;
-            animar = false;
-            voltar.setVisible(true);
-            voltar.setImage(new Image("/Imagem/ImagemTutorial/setaAnterior1.png"));
-            sound.play();
-        } else if (anima == animacao.length - 1) { // ULTIMA PAGINA
-            anima = animacao.length - 5;
-            animar = true;
-            voltando = true;
-            proximo.setVisible(false);
-            voltar.setVisible(false);
-            sair.setVisible(false);
-            proximo.setImage(new Image("/Imagem/ImagemTutorial/setaProximo.png"));
-            sound.play();
-        } else if (anima > 4) {
-            anima = anima - 7;
-            animar = true;
-            voltando = true;
-            proximo.setVisible(false);
-            voltar.setVisible(false);
-            sair.setVisible(false);
-            proximo.setImage(new Image("/Imagem/ImagemTutorial/setaProximo.png"));
-            sound.play();
+               
+        
+       if (anima == 0) {                        
+            
+            voltar.setImage(new Image("/Imagem/tutorial/setaAnterior1.png"));
+            
+        } else if (anima <= animacao.length - 1) { // ULTIMA PAGINA
+            
+            anima = anima - 1; 
+            if(anima == 0){
+                
+                voltar.setImage(new Image("/Imagem/tutorial/setaAnterior1.png"));
+            }
+            proximo.setImage(new Image("/Imagem/tutorial/setaProximo.png"));
+            
         }
     }
 

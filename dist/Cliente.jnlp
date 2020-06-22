@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="SpaceGame(P1).jar" size="31346949" download="eager" />
+    <jar href="SpaceGame(P1).jar" size="31516064" download="eager" />
   </resources>
   <jfx:javafx-desc  width="800" height="600" main-class="Telas.Inicial"  name="Cliente" />
   <update check="always"/>
